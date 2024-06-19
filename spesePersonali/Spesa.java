@@ -6,12 +6,15 @@ public class Spesa {
 	private float importo;
 	private String data;
 	private int idCategoria;
+	private Categoria categoria;
 	
 	//costruttore vuoto
 	public Spesa() {
 		
 	}
 	//altri costruttori
+	
+	
 	public Spesa( int idSpesa, String nomeSpesa, float importo, String data, int idCategoria) {
 		this.idSpesa = idSpesa;
 		this.nomeSpesa = nomeSpesa;
@@ -57,5 +60,14 @@ public class Spesa {
 	public int getIdCategoria() {
 		return idCategoria;
 	}
+	// Metodo per impostare la categoria associata alla spesa
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
+    }
+
+    // Metodo per ottenere la categoria associata alla spesa
+    public Categoria getCategoria() {
+        return categoria;
+    }
 
 }
