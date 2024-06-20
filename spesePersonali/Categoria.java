@@ -36,4 +36,8 @@ public class Categoria {
 	public String getDescrizione() {
 		return descrizione;
 	}
+	@Override
+    public String toString() {
+        return nomeCategoria; // Ritorna il nome della categoria per la rappresentazione nella JComboBox
+    }
 }

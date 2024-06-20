@@ -1,6 +1,6 @@
 package spesePersonali;
 
-public class Spesa {
+public class Spesa{
 	private int idSpesa;
 	private String nomeSpesa;
 	private float importo;
