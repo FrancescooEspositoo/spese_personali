@@ -17,7 +17,7 @@ Eseguire il file DatabaseSetup.java per creare il database e le tabelle necessar
 Eseguire l'applicazione eseguendo la classe SpesaApp.java.
 
 Utilizzo
-Una volta avviata l'applicazione ci sarà un primo pannello con il riepilogo delle spese poi sarà possibile:
+Una volta avviata l'applicazione ci sarà un primo pannello con il riepilogo delle spese dove potrai scaricare anche il PDF, sarà possibile poi:
 Aggiungere, visualizzare, modificare ed eliminare spese e categorie utilizzando l'interfaccia grafica.
 
 Inserire manualmente prima i dati richiesti nella categoria, come nome categoria e descrizione.
