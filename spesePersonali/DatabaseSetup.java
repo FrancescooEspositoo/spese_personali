@@ -2,8 +2,11 @@ package spesePersonali;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import javax.swing.JOptionPane;
 
 
 public class DatabaseSetup {
@@ -42,14 +45,37 @@ public class DatabaseSetup {
                 "id_categoria INT AUTO_INCREMENT PRIMARY KEY, " +
                 "nome_categoria VARCHAR(100) NOT NULL, " +
                 "descrizione TEXT"
-                + ")";        
+                + ")";
+        
+        
         try (Connection connection = DriverManager.getConnection(URL + DB_NAME, user, password);
              Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(createSpeseTable);
             stmt.executeUpdate(createCategorieTable);
+            insertDefaultCategories(stmt);
             System.out.println("Tables created successfully!");
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    
+    //metodo per inserimento delle categorie di default
+    private static void insertDefaultCategories(Statement stmt) throws SQLException{
+    	String checkCategoriesQuery = "SELECT COUNT(*) FROM categorie";
+    	try(ResultSet rs = stmt.executeQuery(checkCategoriesQuery)){
+    		if(rs.next()&& rs.getInt(1) == 0) {
+    			String defaultCategorieTable = "INSERT INTO categorie (nome_categoria,descrizione) VALUES "
+    	        		+ "('Affitto','Spese per Affitto di Casa'),"
+    	        		+ "('Bollette','Spese per Elettricità, Gas, Acqua'),"
+    	        		+ "('Alimentari','Spese per alimentari'),"
+    	        		+ "('Trasporti','Spese per Benzina, Abbonamenti mezzi pubblici'),"
+    	        		+ "('Assicurazione auto','Spese per assicurazione Auto'),"
+    	        		+ "('Manutenzione auto','Spese per la manutenzione Auto')";
+    			stmt.executeUpdate(defaultCategorieTable);
+    			System.out.println("Default categories inserted.");
+    		}else {
+    			System.out.println("Default categories already exist.");
+    		}
+    	}
     }
 }

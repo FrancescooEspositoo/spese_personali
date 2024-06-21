@@ -1,5 +1,6 @@
 package spesePersonali;
 
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -12,6 +13,9 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Properties;
+import com.toedter.calendar.JDateChooser;
+
 
 
 public class SpesaApp extends JFrame{
@@ -22,7 +26,11 @@ public class SpesaApp extends JFrame{
 	private JTextField nuovaSpesaField, nuovoImportoField, nuovaDataField, nuovoIdCatField;
 	private JTextField idCategoriaDeleteField;
 	private JTextField nuovaIdCategoriaField, nuovaCategoriaField, nuovaDescrizioneField;
-	JComboBox<String> idCategoriaComboBox;
+	private JComboBox<String> idCategoriaComboBox;
+	private JDateChooser dateChooser, nuovaDataChooser;
+	
+	
+	
 	public SpesaApp(){
 		spesaCRUD = new SpesaCRUD();
 		categoriaCRUD = new CategoriaCRUD();
@@ -101,24 +109,40 @@ public class SpesaApp extends JFrame{
 			System.exit(0);
 		}
 	}
+	
 	private void setupRiepilogo(JPanel panel){
 		JTextArea outputAreaSpese = new JTextArea();
 		JScrollPane scrollPaneSpese = new JScrollPane(outputAreaSpese);
 		panel.add(scrollPaneSpese, BorderLayout.CENTER);
 		readSpesaNuova(outputAreaSpese);
+		
 		JPanel buttonPanel = new JPanel();
 		
 		buttonPanel.setLayout(new FlowLayout());
+		JButton btnAggiorna = new JButton("Aggiorna Riepilogo");
+		
+		btnAggiorna.setBackground(Color.GREEN);
+		btnAggiorna.setForeground(Color.BLACK);
+		
+		btnAggiorna.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				initializeRiepilogoSpesa(outputAreaSpese);
+				JOptionPane.showMessageDialog(panel, "Aggiornamento ripielogo!");
+			}
+		});
 		JButton btnRead = new JButton("Scarica PDF");
-		btnRead.setBackground(Color.GREEN);
+		btnRead.setBackground(Color.GRAY);
 		btnRead.setForeground(Color.BLACK); 
 		Pdf pdf = new Pdf();
 		btnRead.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				pdf.salvaPdf();
+				JOptionPane.showMessageDialog(panel, "PDF Scaricato con successo!");
 			}
 		});
+		buttonPanel.add(btnAggiorna);
 		buttonPanel.add(btnRead);
 
 		panel.add(buttonPanel, BorderLayout.SOUTH);
@@ -130,20 +154,31 @@ public class SpesaApp extends JFrame{
 		panel.add(scrollPaneSpese, BorderLayout.CENTER);
 
 		JPanel inputPanelSpesa = new JPanel();
-		inputPanelSpesa.setLayout(new GridLayout(7, 2));
+		inputPanelSpesa.setLayout(new GridLayout(7, 3));
+		inputPanelSpesa.add(new JLabel());
 		inputPanelSpesa.add(new JLabel());
 		inputPanelSpesa.add(new JLabel());
 		inputPanelSpesa.add(new JLabel("Nome Spesa:"));
 		nomeSpesaField = new JTextField();
 		inputPanelSpesa.add(nomeSpesaField);
-
+		inputPanelSpesa.add(new JLabel());
+		
+		
 		inputPanelSpesa.add(new JLabel("Importo:"));
 		importoSpesaField = new JTextField();
 		inputPanelSpesa.add(importoSpesaField);
+		inputPanelSpesa.add(new JLabel());
 
-		inputPanelSpesa.add(new JLabel("Data (YYYY-MM-DD):"));
-		dataField = new JTextField();
-		inputPanelSpesa.add(dataField);
+		dateChooser = new JDateChooser();  // Inizializza il JDateChooser
+		inputPanelSpesa.add(new JLabel("Data:"));
+		inputPanelSpesa.add(dateChooser);
+		inputPanelSpesa.add(new JLabel());
+	 	
+		
+	   
+//		inputPanelSpesa.add(new JLabel("Data (YYYY-MM-DD):"));
+//		dataField = new JTextField();
+//		inputPanelSpesa.add(dataField);
 
 		inputPanelSpesa.add(new JLabel("Categoria:"));
 		idCategoriaComboBox = new JComboBox<>();
@@ -151,8 +186,14 @@ public class SpesaApp extends JFrame{
 		//aggiuta le categorie disponibili 
 		popolaComboBoxCategorie(); // Metodo per popolare la JComboBox con le categorie dal database
 		inputPanelSpesa.add(idCategoriaComboBox);
-
-
+		inputPanelSpesa.add(new JLabel());
+		
+		
+		//pannello per la data jcalendar
+		
+		
+		 	
+		 	
 		JButton btnAddSpesa = new JButton("Aggiungi Spesa");
 		btnAddSpesa.setBackground(Color.GREEN);
 		btnAddSpesa.setForeground(Color.BLACK); 
@@ -172,7 +213,8 @@ public class SpesaApp extends JFrame{
 				// Reset dei campi
 				nomeSpesaField.setText("");
 				importoSpesaField.setText("");
-				dataField.setText("");
+//				dataField.setText("");
+				dateChooser.setDate(null);
 				idCategoriaComboBox.setSelectedIndex(0); 
 				
 
@@ -180,7 +222,10 @@ public class SpesaApp extends JFrame{
 		});
 		inputPanelSpesa.add(new JLabel());
 		inputPanelSpesa.add(new JLabel());
+		inputPanelSpesa.add(new JLabel());
+		
 		inputPanelSpesa.add(btnAddSpesa);
+		inputPanelSpesa.add(new JLabel());
 		inputPanelSpesa.add(btnResetSpesa);
 		panel.add(inputPanelSpesa, BorderLayout.NORTH);
 
@@ -194,7 +239,7 @@ public class SpesaApp extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				readSpesaNuova(outputAreaSpese);
-				//readSpesa(outputAreaSpese);
+				
 			}
 		});
 		buttonPanel.add(btnRead);
@@ -208,16 +253,20 @@ public class SpesaApp extends JFrame{
 		panel.add(scrollPaneCategoria, BorderLayout.CENTER);
 
 		JPanel inputPanelCategoria = new JPanel();
-		inputPanelCategoria.setLayout(new GridLayout(5, 2));
+		inputPanelCategoria.setLayout(new GridLayout(5, 3));
 		inputPanelCategoria.add(new JLabel());
 		inputPanelCategoria.add(new JLabel());
+		inputPanelCategoria.add(new JLabel());
+		
 		inputPanelCategoria.add(new JLabel("Nome Categoria:"));
 		nomeCategoriaField = new JTextField();
 		inputPanelCategoria.add(nomeCategoriaField);
+		inputPanelCategoria.add(new JLabel());
 
 		inputPanelCategoria.add(new JLabel("Descrizione:"));
 		descrizioneField = new JTextField();
 		inputPanelCategoria.add(descrizioneField);
+		inputPanelCategoria.add(new JLabel());
 
 
 
@@ -242,9 +291,13 @@ public class SpesaApp extends JFrame{
 				descrizioneField.setText("");
 			}
 		});
+		
 		inputPanelCategoria.add(new JLabel());
 		inputPanelCategoria.add(new JLabel());
+		inputPanelCategoria.add(new JLabel());
+		
 		inputPanelCategoria.add(btnAddCategoria);
+		inputPanelCategoria.add(new JLabel());
 		inputPanelCategoria.add(btnResetCategoria);
 		panel.add(inputPanelCategoria, BorderLayout.NORTH);
 
@@ -270,12 +323,15 @@ public class SpesaApp extends JFrame{
 		panel.add(scrollPaneDelete, BorderLayout.CENTER);
 
 		JPanel inputPanelDelete = new JPanel();
-		inputPanelDelete.setLayout(new GridLayout(8, 4));
+		inputPanelDelete.setLayout(new GridLayout(8, 3));
 		inputPanelDelete.add(new JLabel());
 		inputPanelDelete.add(new JLabel());
+		inputPanelDelete.add(new JLabel());
+		
 		inputPanelDelete.add(new JLabel("ID Spesa:"));
 		idSpesaDeleteField = new JTextField();
 		inputPanelDelete.add(idSpesaDeleteField);
+		inputPanelDelete.add(new JLabel());
 
 		JButton btnAdd = new JButton("Elimina Spesa");
 		btnAdd.setBackground(Color.RED);
@@ -298,18 +354,24 @@ public class SpesaApp extends JFrame{
 				idSpesaDeleteField.setText("");
 			}
 		});
+		
 		inputPanelDelete.add(new JLabel());
 		inputPanelDelete.add(new JLabel());
+		inputPanelDelete.add(new JLabel());
+		
 		inputPanelDelete.add(btnAdd);
+		inputPanelDelete.add(new JLabel());
 		inputPanelDelete.add(btnReset);
 
 		//due placeholder vuoti
 		inputPanelDelete.add(new Label());
 		inputPanelDelete.add(new Label());
+		inputPanelDelete.add(new JLabel());
 		//campi per la categoria
 		inputPanelDelete.add(new JLabel("ID Categoria:"));
 		idCategoriaDeleteField = new JTextField();
 		inputPanelDelete.add(idCategoriaDeleteField);
+		inputPanelDelete.add(new JLabel());
 		
 		//bottone per elimina categoria
 		JButton btnAddCategoria = new JButton("Elimina Categoria");
@@ -319,9 +381,9 @@ public class SpesaApp extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				deleteCategoria(outputAreaDelete);
+				deleteCategoria(outputAreaDelete,panel);
 				updateCategoriaComboBox(); //aggiornamento combobox
-				JOptionPane.showMessageDialog(panel, "Eliminazione avvenuta con successo.");
+				
 			}
 		});
 		JButton btnResetCategoria= new JButton("Reset");
@@ -335,7 +397,9 @@ public class SpesaApp extends JFrame{
 		});
 		inputPanelDelete.add(new JLabel());
 		inputPanelDelete.add(new JLabel());
+		inputPanelDelete.add(new JLabel());
 		inputPanelDelete.add(btnAddCategoria);
+		inputPanelDelete.add(new JLabel());
 		inputPanelDelete.add(btnResetCategoria);
 		panel.add(inputPanelDelete, BorderLayout.NORTH);
 
@@ -373,28 +437,38 @@ public class SpesaApp extends JFrame{
 		panel.add(scrollPane, BorderLayout.CENTER);
 
 		JPanel inputPanel = new JPanel();
-		inputPanel.setLayout(new GridLayout(8, 2));
+		inputPanel.setLayout(new GridLayout(8, 3));
+		inputPanel.add(new JLabel());
 		inputPanel.add(new JLabel());
 		inputPanel.add(new JLabel());
 		inputPanel.add(new JLabel("ID Spesa:"));
 		idSpesaField = new JTextField();
 		inputPanel.add(idSpesaField);
+		inputPanel.add(new JLabel());
 
 		inputPanel.add(new JLabel("Nome Spesa:"));
 		nuovaSpesaField = new JTextField();
 		inputPanel.add(nuovaSpesaField);
+		inputPanel.add(new JLabel());
 
 		inputPanel.add(new JLabel("Importo:"));
 		nuovoImportoField = new JTextField();
 		inputPanel.add(nuovoImportoField);
+		inputPanel.add(new JLabel());
 
-		inputPanel.add(new JLabel("Data (YYYY-MM-DD):"));
-		nuovaDataField = new JTextField();
-		inputPanel.add(nuovaDataField);
+//		inputPanel.add(new JLabel("Data (YYYY-MM-DD):"));
+//		nuovaDataField = new JTextField();
+//		inputPanel.add(nuovaDataField);
+//		inputPanel.add(new JLabel());
+		nuovaDataChooser = new JDateChooser();  // Inizializza il JDateChooser
+		inputPanel.add(new JLabel("Data:"));
+		inputPanel.add(nuovaDataChooser);
+		inputPanel.add(new JLabel());
 
 		inputPanel.add(new JLabel("ID Categoria:"));
 		nuovoIdCatField = new JTextField();
 		inputPanel.add(nuovoIdCatField);
+		inputPanel.add(new JLabel());
 
 		JButton btnAdd = new JButton("Modifica Spesa");
 		btnAdd.setBackground(Color.GREEN);
@@ -417,13 +491,16 @@ public class SpesaApp extends JFrame{
 				idSpesaField.setText("");
 				nuovaSpesaField.setText("");
 				nuovoImportoField.setText("");
-				nuovaDataField.setText("");
+//				nuovaDataField.setText("");
+				nuovaDataChooser.setDate(null);
 				nuovoIdCatField.setText("");		
 			}
 		});
 		inputPanel.add(new JLabel());
 		inputPanel.add(new JLabel());
+		inputPanel.add(new JLabel());
 		inputPanel.add(btnAdd);
+		inputPanel.add(new JLabel());
 		inputPanel.add(btnReset);
 		panel.add(inputPanel, BorderLayout.NORTH);
 
@@ -437,6 +514,7 @@ public class SpesaApp extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				readSpesa(outputAreaUpdate);
+//				readSpesaNuova(outputAreaUpdate);
 			}
 		});
 		buttonPanel.add(btnRead);
@@ -451,20 +529,24 @@ public class SpesaApp extends JFrame{
 		panel.add(scrollPane, BorderLayout.CENTER);
 
 		JPanel inputPanel = new JPanel();
-		inputPanel.setLayout(new GridLayout(6, 2));
+		inputPanel.setLayout(new GridLayout(6, 3));
+		inputPanel.add(new JLabel());
 		inputPanel.add(new JLabel());
 		inputPanel.add(new JLabel());
 		inputPanel.add(new JLabel("ID Categoria:"));
 		nuovaIdCategoriaField = new JTextField();
 		inputPanel.add(nuovaIdCategoriaField);
+		inputPanel.add(new JLabel());
 
 		inputPanel.add(new JLabel("Nome Categoria:"));
 		nuovaCategoriaField= new JTextField();
 		inputPanel.add(nuovaCategoriaField);
+		inputPanel.add(new JLabel());
 
 		inputPanel.add(new JLabel("Descrizione:"));
 		nuovaDescrizioneField= new JTextField();
 		inputPanel.add(nuovaDescrizioneField);
+		inputPanel.add(new JLabel());
 
 		JButton btnAdd = new JButton("Modifica Categoria");
 		btnAdd.setBackground(Color.GREEN);
@@ -472,9 +554,9 @@ public class SpesaApp extends JFrame{
 		btnAdd.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				updateCategoria(outputAreaUpdate);
+				updateCategoria(outputAreaUpdate,panel);
 				updateCategoriaComboBox();
-				JOptionPane.showMessageDialog(panel, "Modifica Categoria avvenuta con successo.");
+				
 			}
 		});
 		JButton btnReset = new JButton("Reset");
@@ -493,7 +575,9 @@ public class SpesaApp extends JFrame{
 		});
 		inputPanel.add(new JLabel());
 		inputPanel.add(new JLabel());
+		inputPanel.add(new JLabel());
 		inputPanel.add(btnAdd);
+		inputPanel.add(new JLabel());
 		inputPanel.add(btnReset);
 		panel.add(inputPanel, BorderLayout.NORTH);
 
@@ -519,12 +603,14 @@ public class SpesaApp extends JFrame{
 		panel.add(scrollPaneSearch, BorderLayout.CENTER);
 
 		JPanel inputPanelSearch = new JPanel();
-		inputPanelSearch.setLayout(new GridLayout(4, 2));
+		inputPanelSearch.setLayout(new GridLayout(4, 3));
+		inputPanelSearch.add(new JLabel());
 		inputPanelSearch.add(new JLabel());
 		inputPanelSearch.add(new JLabel());
 		inputPanelSearch.add(new JLabel("Ricerca Data o Categoria:"));
 		JTextField searchField = new JTextField();
 		inputPanelSearch.add(searchField);
+		inputPanelSearch.add(new JLabel());
 
 		JButton btnSearch = new JButton("Cerca");
 		btnSearch.setBackground(Color.GREEN);
@@ -549,7 +635,9 @@ public class SpesaApp extends JFrame{
 		});
 		inputPanelSearch.add(new JLabel());
 		inputPanelSearch.add(new JLabel());
+		inputPanelSearch.add(new JLabel());
 		inputPanelSearch.add(btnSearch);
+		inputPanelSearch.add(new JLabel());
 		inputPanelSearch.add(btnReset);
 
 		panel.add(inputPanelSearch, BorderLayout.NORTH);
@@ -611,67 +699,37 @@ public class SpesaApp extends JFrame{
 	private void initializeComboBox() {
 		updateCategoriaComboBox();
 	}
-
+	private void initializeRiepilogoSpesa(JTextArea outputAreaSpese) {
+		java.util.List<Spesa> spese = spesaCRUD.getAllSpesaNuova();
+		outputAreaSpese.setText("");
+		for(Spesa s : spese) {
+			outputAreaSpese.append("Data: " + s.getData() + " - Nome Spesa: " + s.getNomeSpesa()+ " -  Importo: " + s.getImporto()+"€" + " - Nome Categoria: "+ s.getCategoria().getNomeCategoria()+ "\n");
+		}
+	}
+	
 	private void searchSpesa(JTextArea outputAreaSearch, String searchTerm) {
 
 		java.util.List<Spesa> spese = spesaCRUD.searchSpesa(searchTerm);
 		outputAreaSearch.setText("");
 
 		for (Spesa s : spese) {
-			outputAreaSearch.append("ID Spesa: " + s.getIdSpesa() + ", Nome Spesa: " + s.getNomeSpesa() +
-					", Importo: " + s.getImporto() + ", Data: " + s.getData() +
-					" |  ID Categoria: " + s.getIdCategoria() + ", Nome Categoria: " + s.getCategoria().getNomeCategoria()  +", Descrizione Categoria: " +s.getCategoria().getDescrizione() + "\n");
+			outputAreaSearch.append("ID Spesa: " + s.getIdSpesa() + " - Nome Spesa: " + s.getNomeSpesa() +
+					" - Importo: " + s.getImporto() + " - Data: " + s.getData() +
+					" |  ID Categoria: " + s.getIdCategoria() + " - Nome Categoria: " + s.getCategoria().getNomeCategoria()  +" - Descrizione Categoria: " +s.getCategoria().getDescrizione() + "\n");
 		}
 	}
-
-
-	//	private void addSpesa(JTextArea outputAreaSpese) {
-	//		
-	//		String nomeSpesa = nomeSpesaField.getText();
-	//		String importoText = importoSpesaField.getText();
-	//		String data = dataField.getText();
-	////		String idCategoriaText = idCategoriaField.getText();
-	//	    Categoria selectedCategoria = (Categoria) idCategoriaComboBox.getSelectedItem();
-	//		
-	//	    System.out.println("Nome Spesa: " + nomeSpesa);
-	//	    System.out.println("Importo: " + importoText);
-	//	    System.out.println("Data: " + data);
-	//	    System.out.println("ID Categoria: " + selectedCategoria);
-	//	    // Verifica che nessuno dei campi sia vuoto
-	//	    if (nomeSpesa.isEmpty() || importoText.isEmpty() || data.isEmpty() || selectedCategoria == null) {
-	//	        outputAreaSpese.setText("Tutti i campi devono essere compilati!\n");
-	//	        return;
-	//	    }
-	//
-	//	    try {
-	//	        // Converti i campi di testo in valori numerici
-	//	        float importo = Float.parseFloat(importoText);
-	//	        
-	//
-	//	        // Crea un oggetto Spesa e aggiungilo al database
-	//	        Spesa spesa = new Spesa(nomeSpesa, importo, data, selectedCategoria.getIdCategoria());
-	//	        spesaCRUD.addSpesa(spesa);
-	//	        
-	////	        outputAreaSpese.setText("Spesa aggiunta con successo!\n");
-	//	    } catch (NumberFormatException e) {
-	//	        outputAreaSpese.setText("Importo e ID Categoria devono essere numeri validi!\n");
-	//	    }
-	//	}
-
-
 	private void addSpesa(JTextArea outputAreaSpese) {
 		String nomeSpesa = nomeSpesaField.getText();
 		String importoText = importoSpesaField.getText();
-		String data = dataField.getText();
+		Date data = dateChooser.getDate();
 		String nomeCategoria = (String) idCategoriaComboBox.getSelectedItem();
 
 		// Verifica che nessuno dei campi sia vuoto
-		if (nomeSpesa.isEmpty() || importoText.isEmpty() || data.isEmpty() || nomeCategoria.isEmpty()) {
+		if (nomeSpesa.isEmpty() || importoText.isEmpty() || data==null || nomeCategoria.isEmpty()) {
 			JOptionPane.showMessageDialog(this, "Tutti i campi devono essere compilati");
 //			outputAreaSpese.setText("Tutti i campi devono essere compilati!\n");
 			return;
 		}
-
 		try {
 			// Converti il campo importo in valore numerico
 			float importo = Float.parseFloat(importoText);
@@ -689,11 +747,12 @@ public class SpesaApp extends JFrame{
 
 
 
+
 	private void readSpesa(JTextArea outputAreaSpese) {
 		java.util.List<Spesa> spese = spesaCRUD.getAllSpesa();
 		outputAreaSpese.setText("");
 		for(Spesa s : spese) {
-			outputAreaSpese.append("ID Spesa: " + s.getIdSpesa() + ", Nome Spesa: " + s.getNomeSpesa()+ ", Importo: " + "€"+s.getImporto() + ", Data: " + s.getData() + ", ID Categoria: "+ s.getIdCategoria() +"\n");
+			outputAreaSpese.append("ID Spesa: " + s.getIdSpesa() + " - Nome Spesa: " + s.getNomeSpesa()+ " - Importo: " + "€"+s.getImporto() + " - Data: " + s.getData() + " - ID Categoria: "+ s.getIdCategoria() +"\n");
 
 		}
 	}
@@ -703,11 +762,13 @@ public class SpesaApp extends JFrame{
 		String idSpesaText = idSpesaField.getText();
 		String nomeSpesa = nuovaSpesaField.getText();
 		String importoText = nuovoImportoField.getText();
-		String data = nuovaDataField.getText();
+//		String data = nuovaDataField.getText();
+		Date data = nuovaDataChooser.getDate();
+		
 		String idCategoriaText = nuovoIdCatField.getText();
 
 		// Verifica che nessuno dei campi sia vuoto
-		if (idSpesaText.isEmpty()|| nomeSpesa.isEmpty() || importoText.isEmpty() || data.isEmpty() || idCategoriaText.isEmpty()) {
+		if (idSpesaText.isEmpty()|| nomeSpesa.isEmpty() || data== null || importoText.isEmpty()|| idCategoriaText.isEmpty()) {
 			outputAreaUpdate.setText("Tutti i campi devono essere compilati!\n");
 			return;
 		}
@@ -717,9 +778,12 @@ public class SpesaApp extends JFrame{
 			float importo = Float.parseFloat(importoText);
 			int idCategoria = Integer.parseInt(idCategoriaText);
 			int idSpesa = Integer.parseInt(idSpesaText);
-
+			// Converti java.util.Date in java.sql.Date
+			java.sql.Date sqlDate = new java.sql.Date(data.getTime());
+			System.out.println("data:" + sqlDate);
+			System.out.println("id spesa costruttore:" + idSpesa);
 			// Crea un oggetto Spesa e aggiungilo al database
-			Spesa spesa = new Spesa(idSpesa,nomeSpesa, importo, data, idCategoria);
+			Spesa spesa = new Spesa(idSpesa,nomeSpesa, importo, sqlDate, idCategoria);
 			spesaCRUD.updateSpesa(spesa);
 			//	        outputAreaUpdate.setText("Spesa modificata con successo!\n");
 		} catch (NumberFormatException e) {
@@ -727,7 +791,7 @@ public class SpesaApp extends JFrame{
 		}
 	}
 
-	private void updateCategoria(JTextArea outputAreaUpdate) {
+	private void updateCategoria(JTextArea outputAreaUpdate, JPanel panel) {
 		String idCategoriaText = nuovaIdCategoriaField.getText();
 		String nomeCategoria = nuovaCategoriaField.getText();
 		String descrizione = nuovaDescrizioneField.getText();
@@ -736,7 +800,7 @@ public class SpesaApp extends JFrame{
 		// Verifica che nessuno dei campi sia vuoto
 		if (idCategoriaText.isEmpty()) {
 			JOptionPane.showMessageDialog(this, "Tutti i campi devono essere compilati!");
-//			outputAreaUpdate.setText("Tutti i campi devono essere compilati!\n");
+
 			return;
 		}
 
@@ -745,14 +809,14 @@ public class SpesaApp extends JFrame{
 
 			int idCategoria = Integer.parseInt(idCategoriaText);
 
-
 			// Crea un oggetto Spesa e aggiungilo al database
 			Categoria categoria = new Categoria(idCategoria, nomeCategoria, descrizione);
 
-			categoriaCRUD.updateCategoria(categoria);
-			//	        outputAreaUpdate.setText("Spesa modificata con successo!\n");
+			categoriaCRUD.updateCategoria(categoria, panel);
+			
 		} catch (NumberFormatException e) {
-			outputAreaUpdate.setText("Importo e ID Categoria devono essere numeri validi!\n");
+//			outputAreaUpdate.setText("Importo e ID Categoria devono essere numeri validi!\n");
+			JOptionPane.showMessageDialog(panel, "Importo e ID Categoria devono essere numeri validi!");
 		}
 	}
 	private void deleteSpesa(JTextArea outputAreaDelete) {
@@ -772,20 +836,20 @@ public class SpesaApp extends JFrame{
 		java.util.List<Categoria> categorie = categoriaCRUD.getAllCategoria();
 		outputAreaCategoria.setText("");
 		for(Categoria c : categorie) {
-			outputAreaCategoria.append("ID Categoria: " + c.getIdCategoria() + ", Nome Categoria: " + c.getNomeCategoria() + ", Descrizione: " + c.getDescrizione()+"\n");
+			outputAreaCategoria.append("ID Categoria: " + c.getIdCategoria() + " - Nome Categoria: " + c.getNomeCategoria() + " - Descrizione: " + c.getDescrizione()+"\n");
 
 		}
 	}
-	private void deleteCategoria(JTextArea outputAreaDelete) {
+	private void deleteCategoria(JTextArea outputAreaDelete, JPanel panel) {
 		int idCategoria = Integer.parseInt(idCategoriaDeleteField.getText());
-		categoriaCRUD.deleteCategoria(idCategoria);
+		categoriaCRUD.deleteCategoria(idCategoria, panel);
 	}
 
 	public void readSpesaNuova(JTextArea outputAreaSpese) {
 		java.util.List<Spesa> spese = spesaCRUD.getAllSpesaNuova();
 		outputAreaSpese.setText("");
 		for(Spesa s : spese) {
-			outputAreaSpese.append("ID: " + s.getIdSpesa() + ", Nome Spesa: " + s.getNomeSpesa()+ ", Importo: " + s.getImporto()+"€" + ", Data: " + s.getData() + ", Nome Categoria: "+ s.getCategoria().getNomeCategoria()+ ", Descrizione: " + s.getCategoria().getDescrizione() +"\n");
+			outputAreaSpese.append("Data: " + s.getData() + " - Nome Spesa: " + s.getNomeSpesa()+ " -  Importo: " + s.getImporto()+"€" + " - Nome Categoria: "+ s.getCategoria().getNomeCategoria()+ "\n");
 		}
 	}
 	

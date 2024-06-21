@@ -1,7 +1,14 @@
 package spesePersonali;
 import java.sql.*;
 import java.util.*;
+
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 public class CategoriaCRUD {
+	
+	//attributi
+	private static final Set<Integer> DEFAULT_CATEGORY_IDS = new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6));
+	
 	//metodi crud
 	//create
 		public void addCategoria(Categoria categoria) {
@@ -38,18 +45,27 @@ public class CategoriaCRUD {
 			return categorie;
 		}
 		//delete
-		public void deleteCategoria(int idCategoria) {
+		public void deleteCategoria(int idCategoria, JPanel panel) {
+			if(DEFAULT_CATEGORY_IDS.contains(idCategoria)) {
+				JOptionPane.showMessageDialog(panel, "Non è possibile eliminare le categorie predefinite.", "Errore", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 			String query= "DELETE FROM categorie WHERE id_categoria = ?";
 			try(Connection conn = DatabaseConnection.getConnection();
 					PreparedStatement pstmt = conn.prepareStatement(query)){
 				pstmt.setInt(1, idCategoria);
 				pstmt.executeUpdate();
+				JOptionPane.showMessageDialog(panel, "Eliminazione avvenuta con successo!");
 			}catch(SQLException e) {
 				e.printStackTrace();
 			}
 		}
 		//update
-		public void updateCategoria(Categoria categoria) {
+		public void updateCategoria(Categoria categoria, JPanel panel) {
+			if(DEFAULT_CATEGORY_IDS.contains(categoria.getIdCategoria())) {
+				JOptionPane.showMessageDialog(panel, "Non è possibile modificare le categorie predefinite.", "Errore", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 			String query="UPDATE categorie SET nome_categoria = ? , descrizione = ? WHERE id_categoria = ?";
 			try(Connection conn = DatabaseConnection.getConnection();
 					PreparedStatement pstmt = conn.prepareStatement(query))
@@ -58,6 +74,7 @@ public class CategoriaCRUD {
 				pstmt.setString(2, categoria.getDescrizione());
 				pstmt.setInt(3, categoria.getIdCategoria());
 				pstmt.executeUpdate();
+				JOptionPane.showMessageDialog(panel, "Modifica avvenuta con successo!");
 						
 					}catch(SQLException e) {
 						e.printStackTrace();

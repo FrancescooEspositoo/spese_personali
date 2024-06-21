@@ -5,6 +5,7 @@ public class Spesa{
 	private String nomeSpesa;
 	private float importo;
 	private String data;
+	private java.util.Date data1;
 	private int idCategoria;
 	private Categoria categoria;
 	
@@ -22,12 +23,28 @@ public class Spesa{
 		this.data = data;
 		this.idCategoria = idCategoria;
 	}
+	
 	public Spesa( String nomeSpesa, float importo, String data, int idCategoria) {
 		this.nomeSpesa = nomeSpesa;
 		this.importo = importo;
 		this.data = data;
 		this.idCategoria = idCategoria;
 	}
+	
+	public Spesa(int idSpesa, String nomeSpesa, float importo, java.util.Date data1, int idCategoria) {
+		this.idSpesa = idSpesa;
+		this.nomeSpesa = nomeSpesa;
+		this.importo = importo;
+		this.data1 = data1;
+		this.idCategoria = idCategoria;
+	}
+	public Spesa(String nomeSpesa, float importo, java.util.Date data1, int idCategoria) {
+		this.nomeSpesa = nomeSpesa;
+		this.importo = importo;
+		this.data1 = data1;
+		this.idCategoria = idCategoria;
+	}
+	
 	//metodi set e get
 	public void setIdSpesa(int idSpesa) {
 		this.idSpesa = idSpesa;
@@ -68,6 +85,14 @@ public class Spesa{
     // Metodo per ottenere la categoria associata alla spesa
     public Categoria getCategoria() {
         return categoria;
+    }
+ // Getter e setter per data
+    public java.util.Date getData1() {
+        return data1;
+    }
+
+    public void setData(java.util.Date data1) {
+        this.data1 = data1;
     }
 
 }

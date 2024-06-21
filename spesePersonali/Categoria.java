@@ -13,6 +13,11 @@ public class Categoria {
 		this.nomeCategoria = nomeCategoria;
 		this.descrizione = descrizione;
 	}
+	public Categoria( String nomeCategoria) {
+		
+		this.nomeCategoria = nomeCategoria;
+		
+	}
 	public Categoria( String nomeCategoria, String descrizione) {
 		
 		this.nomeCategoria = nomeCategoria;

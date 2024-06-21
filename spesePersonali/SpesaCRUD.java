@@ -8,20 +8,41 @@ import java.util.*;
 public class SpesaCRUD {
 	//metodi crud
 	//create
+//	public void addSpesa(Spesa spesa) {
+//		String query="INSERT INTO spese (nome_spesa, importo, data, id_categoria)VALUES (?,?,?,?)";
+//		try(Connection conn = DatabaseConnection.getConnection();
+//				PreparedStatement pstmt = conn.prepareStatement(query)){
+//			pstmt.setString(1, spesa.getNomeSpesa());
+//			pstmt.setFloat(2, spesa.getImporto());
+//			pstmt.setString(3, spesa.getData());
+//			pstmt.setInt(4, spesa.getIdCategoria());
+//			
+//			pstmt.executeUpdate();
+//		}catch(SQLException e) {
+//			e.printStackTrace();
+//		}
+//	}
 	public void addSpesa(Spesa spesa) {
-		String query="INSERT INTO spese (nome_spesa, importo, data, id_categoria)VALUES (?,?,?,?)";
-		try(Connection conn = DatabaseConnection.getConnection();
-				PreparedStatement pstmt = conn.prepareStatement(query)){
-			pstmt.setString(1, spesa.getNomeSpesa());
-			pstmt.setFloat(2, spesa.getImporto());
-			pstmt.setString(3, spesa.getData());
-			pstmt.setInt(4, spesa.getIdCategoria());
-			
-			pstmt.executeUpdate();
-		}catch(SQLException e) {
-			e.printStackTrace();
-		}
+	    String query = "INSERT INTO spese (nome_spesa, importo, data, id_categoria) VALUES (?,?,?,?)";
+	    try (Connection conn = DatabaseConnection.getConnection();
+	         PreparedStatement pstmt = conn.prepareStatement(query)) {
+	        
+	        pstmt.setString(1, spesa.getNomeSpesa());
+	        pstmt.setFloat(2, spesa.getImporto());
+	        
+	        // Converti java.util.Date in java.sql.Date
+	        java.util.Date utilDate = spesa.getData1();
+	        java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+	        pstmt.setDate(3, sqlDate);
+	        
+	        pstmt.setInt(4, spesa.getIdCategoria());
+	        
+	        pstmt.executeUpdate();
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
 	}
+	
 	//read
 	public List<Spesa> getAllSpesa(){
 		List<Spesa> spese = new ArrayList<>();
@@ -45,16 +66,28 @@ public class SpesaCRUD {
 		}
 		return spese;
 	}
+	
+	
+	
 	//update
 	public void updateSpesa(Spesa spesa) {
 		String query = "UPDATE spese SET nome_spesa = ?, importo = ?, data = ?, id_categoria = ? WHERE id_spese = ?";
 		try(Connection conn = DatabaseConnection.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement(query)){
+			
 			pstmt.setString(1, spesa.getNomeSpesa());
 			pstmt.setFloat(2, spesa.getImporto());
-			pstmt.setString(3, spesa.getData());
+			
+			// Converti java.util.Date in java.sql.Date
+	        java.util.Date utilDate = spesa.getData1();
+	        java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+	        String strSqlDate = sqlDate.toString(); 
+	        System.out.println("DATA: " + sqlDate);
+	        pstmt.setString(3, strSqlDate);
+//			pstmt.setString(3, spesa.getData());
 			pstmt.setInt(4, spesa.getIdCategoria());
 			pstmt.setInt(5, spesa.getIdSpesa());
+			System.out.println("id spesa:" + spesa.getIdSpesa());
 			pstmt.executeUpdate();
 		}catch(SQLException e) {
 			e.printStackTrace();
@@ -117,9 +150,10 @@ public class SpesaCRUD {
 	//read
 		public List<Spesa> getAllSpesaNuova(){
 			List<Spesa> spese = new ArrayList<>();
-			String query="select spese.id_spese, spese.nome_spesa, spese.importo, spese.data, categorie.nome_categoria, categorie.descrizione "
+			String query="select spese.nome_spesa, spese.importo, spese.data, categorie.nome_categoria, categorie.descrizione "
 					+ "from spese "
-					+ "JOIN categorie ON spese.id_categoria = categorie.id_categoria";
+					+ "JOIN categorie ON spese.id_categoria = categorie.id_categoria "
+					+ "ORDER BY spese.data ASC"; //ORDINE ASCENDENTE PER DATA
 			try(Connection conn = DatabaseConnection.getConnection();
 					Statement stmt = conn.createStatement();
 					ResultSet rs = stmt.executeQuery(query)
@@ -127,16 +161,16 @@ public class SpesaCRUD {
 				while(rs.next()) {
 					Spesa spesa = new Spesa();
 					
-					spesa.setIdSpesa(rs.getInt("id_spese"));
+//					spesa.setIdSpesa(rs.getInt("id_spese"));
 					spesa.setNomeSpesa(rs.getString("nome_spesa"));
 					spesa.setImporto(rs.getFloat("importo"));
 					spesa.setData(rs.getString("data"));
 
 					String nomeCategoria = rs.getString("nome_categoria");
-					String descrizione = rs.getString("descrizione");
+//					String descrizione = rs.getString("descrizione");
 					
 					
-					Categoria categoria = new Categoria(nomeCategoria,descrizione);
+					Categoria categoria = new Categoria(nomeCategoria);
 					spesa.setCategoria(categoria);
 					
 					spese.add(spesa);
