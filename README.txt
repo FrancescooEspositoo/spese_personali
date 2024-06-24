@@ -4,7 +4,11 @@ Questo progetto consiste in un'applicazione Java che si connette a un database M
 Requisiti
 Java Development Kit (JDK) versione 8 o successiva
 MySQL Server
-Librerie JDBC per MySQL (solitamente fornite dal driver MySQL)
+Librerie:
+ - JDBC per MySQL (solitamente fornite dal driver MySQL);
+ - JCalendar;
+ - Swing per le interfacce;
+ 
 
 Importare il progetto in un IDE Java come Eclipse.
 
